@@ -100,9 +100,8 @@ var XioPop = (function() {
 		btnOK.type = "button";
 		btnOK.textContent = "OK";
 		btnOK.addEventListener("click", function(e) {
-			console.debug("OK clicked");
 			close();
-			callback();
+			if(callback) callback();
 		}, false);
 		
 		buttonSet.appendChild(btnOK);
@@ -342,7 +341,7 @@ var XioPop = (function() {
 	
 	function addText(text) {
 		var txtText = document.createElement("p");
-		txtText.textContent = text;
+		txtText.innerHTML = text;
 		box.appendChild(txtText);
 		return txtText;
 	}
