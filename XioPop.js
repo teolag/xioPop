@@ -1,6 +1,7 @@
 var XioPop = (function() {
 	var xiopop, box;
 	var closeOnClickOutside;
+    var KEY_ENTER=13, KEY_ESC=27, KEY_UP=38, KEY_DOWN=40;
 	
 	
 	var fog = (function() {
@@ -62,7 +63,7 @@ var XioPop = (function() {
 		console.log("Initializing XioPop");
 		
 		xiopop = document.createElement('div');
-		xiopop.id = "xiopop";
+		xiopop.classList.add("xiopop");
 		xiopop.addEventListener("click", function(e) {
 			if(e.target===xiopop && closeOnClickOutside) {
 				close();
@@ -72,7 +73,7 @@ var XioPop = (function() {
 		
 			
 		box = document.createElement('div');
-		box.id = "xiopop_box";
+		box.classList.add("xiopop_box");
 		xiopop.appendChild(box);
 	}
 	
@@ -227,8 +228,8 @@ var XioPop = (function() {
 		
 		var filter = document.createElement("input");
 		filter.type="search";
-		filter.addEventListener("keyup", doFilter, false);
-		filter.addEventListener("search", doFilter, false);
+		filter.addEventListener("keyup", selectKeyHandler, false);
+		filter.addEventListener("search", selectKeyHandler, false);
 		
 		var list = document.createElement("ul");
 		list.classList.add("selectableList");
@@ -239,11 +240,18 @@ var XioPop = (function() {
 				close();
 			}		
 		});
+        list.addEventListener("mousemove", function(e) {
+            var target = e.target;
+			if(target.nodeName==="LI") {
+                selectItem(target);
+            }
+        });
 		for(var i=0; i<items.length; i++) {
 			var item = items[i];
 			var li = document.createElement("li");
 			li.textContent = item.text;
 			li.dataset.id = i;
+            if(i===0) li.classList.add("selected");
 			item.li = li;
 			list.appendChild(li);
 		}
@@ -252,34 +260,54 @@ var XioPop = (function() {
 		box.appendChild(list);
 		showBox();
 		filter.focus();
+        
+        
+        function selectItem(li) {
+            for(var i=0; i<list.children.length; i++) {
+                list.children[i].classList.remove("selected");
+            }
+            li.classList.add("selected");
+        }
 		
-		console.debug(items);
 		
-		
-		
-		
-		function doFilter(e) {
-			if(e && e.which == 13) {
-				var first = list.querySelector("li");	
-				if(!first) return;
-				
-				callback(items[first]);
-				close();
-			} else {
-				var searchString = e.target.value.toLowerCase();
-				console.log("filter items '"+searchString+"'");
-				
-				for(var i in items) {
-					var item = items[i];
-					console.log("Item", item);
-					
-					if(item.text.toLowerCase().search(searchString)!=-1) {
-						item.li.classList.remove('xiopop_hidden');
-					} else {
-						item.li.classList.add('xiopop_hidden');
-					}
-				}
-			}
+		function selectKeyHandler(e) {
+            switch(e.which) {
+                case KEY_ENTER:
+                debugger;
+                var first = list.querySelector("li");
+                if(!first) return;
+                callback(items[first]);
+                close();
+                return;
+                break;
+
+                case KEY_UP:
+                console.log("UP");
+                e.preventDefault();
+                return;
+                break;
+
+                case KEY_DOWN:
+                console.log("DOWN");
+                e.preventDefault();
+                return;
+                break;
+            }
+            
+            
+            var searchString = e.target.value.toLowerCase();
+            console.log("filter items '"+searchString+"'", items);
+
+            for(var i in items) {
+                var item = items[i];
+                console.log("Item", item);
+
+                if(item.text.toLowerCase().search(searchString)!=-1) {
+                    item.li.classList.remove('hidden');
+                } else {
+                    item.li.classList.add('hidden');
+                }
+            }
 		}
 	}
 	
@@ -313,7 +341,7 @@ var XioPop = (function() {
 	
 	
 	function keyHandler(e) {
-		if(e.keyCode==27 && closeOnClickOutside) {
+		if(e.keyCode==KEY_ESC && closeOnClickOutside) {
 			close();
 		}
 	}

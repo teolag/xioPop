@@ -1,6 +1,6 @@
 
 
-#xiopop {
+.xiopop {
 	position: fixed;
 	top: 0px;
 	left: 0px;
@@ -13,7 +13,7 @@
 }
 
 
-#xiopop_box {
+.xiopop_box {
 	display: none;
 	background-color: white;
 	padding: 20px;
@@ -23,11 +23,11 @@
 	box-shadow: 0 3px 6px rgba(0,0,0,0.4);
 }
 
-#xiopop_box.visible {
+.xiopop_box.visible {
 	display: inline-block;
 }
 
-#xiopop_box_title {
+.xiopop_box_title {
 	font-size: 1.4em;
 	text-align: center;
 	margin-bottom: 1em;
@@ -35,7 +35,7 @@
 
 
 
-.xiopop_hidden {
+.xiopop .hidden {
 	display: none;
 }
 
@@ -96,6 +96,32 @@
 }
 
 
+/*** SELECT ***/
+.xiopop_select input {
+    background-color: #eed;
+    border: 0;
+    padding: 0.4em 0.5em;
+    margin: 0;
+    box-shadow: 0px 1px 4px rgba(0,0,0,0.3) inset;
+}
+.xiopop_select input:focus {
+    outline: none;   
+}
+.xiopop_select .selectableList {
+	padding: 0;
+	margin: 1em 0 0 0;
+}
+.xiopop_select .selectableList li {
+    list-style-type: none;
+    text-align: left;
+    padding: 0.3em 0.5em;
+    background-color: #eee;
+    margin-bottom: 2px;
+}
+.xiopop_select .selectableList li.selected {
+	background-color: #ccc;
+}
+
 
 #xiopop_prompt_label {
 	display: block;
@@ -105,6 +131,6 @@ body.xiopop_open {
 	overflow: hidden;
 }
 
-body.xiopop_open #xiopop {
+body.xiopop_open .xiopop {
 	display: block;
 }
