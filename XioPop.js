@@ -2,17 +2,17 @@ var XioPop = (function() {
 	var xiopop, box;
 	var closeOnClickOutside;
     var KEY_ENTER=13, KEY_ESC=27, KEY_UP=38, KEY_DOWN=40;
-	
-	
+
+
 	var fog = (function() {
 		var div;
-		
+
 		function init() {
 			div = document.createElement('div');
 			div.classList.add("xiopop_fog");
-			document.body.appendChild(div);					
+			document.body.appendChild(div);
 		}
-		
+
 		function show() {
 			if(isVisible()) return;
 			div.classList.add("visible");
@@ -20,48 +20,46 @@ var XioPop = (function() {
 				div.classList.add("dimmed");
 			}, 1);
 		}
-		
+
 		function hide(removeAfterFogHide) {
 			div.classList.remove("dimmed");
-			
+
 			if(removeAfterFogHide) {
 				setTimeout(function() {
 					div.classList.remove("visible");
 				}, 300);
-			}			
+			}
 		}
-		
+
 		function isVisible() {
 			return div.classList.contains("visible");
 		}
-		
-		
+
+
 		function tryToClose(e) {
 			if(e.target===div && closeOnClickOutside) {
 				close();
 			}
 		}
-		
-		
+
+
 		return {
 			init: init,
 			show: show,
 			hide: hide,
 			isVisible: isVisible
-		}	
+		}
 	})();
-	
-	
-	
-	
-	
-	
-	
-		
+
+
+
+
 	function init() {
+		if(xiopop) return;
+
 		fog.init();
 		console.log("Initializing XioPop");
-		
+
 		xiopop = document.createElement('div');
 		xiopop.classList.add("xiopop");
 		xiopop.addEventListener("click", function(e) {
@@ -70,31 +68,24 @@ var XioPop = (function() {
 			}
 		}, false);
 		document.body.appendChild(xiopop);
-		
-			
+
+
 		box = document.createElement('div');
 		box.classList.add("xiopop_box");
 		xiopop.appendChild(box);
 	}
-	
-	
-	
-	
-	
-	
-	
 
-	
-	
-	
+
+
+
 	function alert(title, text, callback) {
 		show();
 		box.classList.add("xiopop_alert");
 		closeOnClickOutside=false;
-		
+
 		var txtTitle = addTitle(title);
 		var txtText = addText(text);
-	
+
 		var buttonSet = addButtonSet(box);
 
 		var btnOK = document.createElement("button");
@@ -104,46 +95,47 @@ var XioPop = (function() {
 			close();
 			if(callback) callback();
 		}, false);
-		
+
 		buttonSet.appendChild(btnOK);
 		fog.show();
 		showBox();
 	}
-	
+
 	function prompt(title, label, oldText, callback) {
 		show();
+		addClose();
 		box.classList.add("xiopop_prompt");
 		closeOnClickOutside=false;
 		var txtTitle = addTitle(title);
-		
+
 		var form = document.createElement("form");
 		form.addEventListener("submit", function(e) {
 			e.preventDefault();
 			close();
 			callback(input.value);
 		}, false);
-		
+
 		var lblPrompt = document.createElement("label");
 		lblPrompt.setAttribute("for", "xiopop_prompt_label");
 		lblPrompt.textContent = label;
 		form.appendChild(lblPrompt);
-		
-		
+
+
 		var input = document.createElement("input");
 		input.id = "xiopop_prompt_label";
 		input.type = "text";
 		input.value = oldText;
 		form.appendChild(input);
-		
+
 		box.appendChild(form);
-		
+
 		var buttonSet = addButtonSet(form);
-		
+
 		var btnOK = document.createElement("button");
 		btnOK.type = "submit";
 		btnOK.textContent = "OK";
 		buttonSet.appendChild(btnOK);
-		
+
 		var btnCancel = document.createElement("button");
 		btnCancel.type = "button";
 		btnCancel.textContent = "Cancel";
@@ -152,41 +144,41 @@ var XioPop = (function() {
 			callback(false);
 		}, false);
 		buttonSet.appendChild(btnCancel);
-		
+
 		fog.show();
 		showBox();
 		input.focus();
 	}
-	
-	
+
+
 	function confirm(title, text, callback) {
 		show();
 		box.classList.add("xiopop_confirm");
 		closeOnClickOutside=false;
-		
+
 		var txtTitle = addTitle(title);
 		var txtText = addText(text);
-		
-		
+
+
 		var buttonSet = addButtonSet(box);
-		
-		
+
+
 		var btnYes = document.createElement("button");
 		btnYes.type = "button";
 		btnYes.textContent = "Yes";
 		btnYes.addEventListener("click", confirmClick, false);
-		
+
 		var btnNo = document.createElement("button");
 		btnNo.type = "button";
 		btnNo.textContent = "No";
 		btnNo.addEventListener("click", confirmClick, false);
-		
+
 		buttonSet.appendChild(btnYes);
 		buttonSet.appendChild(btnNo);
 		fog.show();
 		showBox();
-		
-		
+
+
 		function confirmClick(e) {
 			close();
 			if(e.target==btnYes) {
@@ -196,58 +188,50 @@ var XioPop = (function() {
 			}
 		}
 	}
-	
-	
+
+
 	function load(url, callback) {
 		show();
+		addClose();
 		box.classList.add("xiopop_html");
 		closeOnClickOutside=true;
-	
+
 		var xhr = new XMLHttpRequest();
 		xhr.open("get", url, true);
-		
+
 		xhr.onload = function(e) {
-			box.innerHTML = e.target.responseText;
+			var content = document.createElement("div");
+			content.innerHTML = e.target.responseText;
+			box.appendChild(content);
 			showBox();
-			if(callback) callback(e);
+			if(callback) callback(e, content);
 		}
-		
-		xhr.send();			
+
+		xhr.send();
 		fog.show();
 	}
-	
-	
-	
-	
-	function select(items, callback) {
+
+
+	function choose(title, text, options, callback) {
 		show();
-		box.classList.add("xiopop_select");
-		console.log("Show selectlist");
-		closeOnClickOutside=true;
-		fog.show();
-		
-		var filter = document.createElement("input");
-		filter.type="search";
-		filter.addEventListener("keyup", selectKeyHandler, false);
-		filter.addEventListener("search", selectKeyHandler, false);
-		
+		addClose();
+		box.classList.add("xiopop_choose");
+
+		var txtTitle = addTitle(title);
+		var txtText = addText(text);
+
 		var list = document.createElement("ul");
-		list.classList.add("selectableList");
+		list.classList.add("xiopop_selectableList");
 		list.addEventListener("click", function(e) {
 			var target = e.target;
 			if(target.nodeName==="LI") {
-				callback(items[target.dataset.id]);
+				callback(options[target.dataset.id]);
 				close();
-			}		
+			}
 		});
-        list.addEventListener("mousemove", function(e) {
-            var target = e.target;
-			if(target.nodeName==="LI") {
-                selectItem(target);
-            }
-        });
-		for(var i=0; i<items.length; i++) {
-			var item = items[i];
+
+		for(var i=0; i<options.length; i++) {
+			var item = options[i];
 			var li = document.createElement("li");
 			li.textContent = item.text;
 			li.dataset.id = i;
@@ -255,28 +239,70 @@ var XioPop = (function() {
 			item.li = li;
 			list.appendChild(li);
 		}
-		
+
+		box.appendChild(list);
+		showBox();
+	}
+
+
+	function select(options, callback) {
+		show();
+		box.classList.add("xiopop_select");
+		console.log("Show selectlist");
+		closeOnClickOutside=true;
+		fog.show();
+
+		var filter = document.createElement("input");
+		filter.type="search";
+		filter.addEventListener("keyup", selectKeyHandler, false);
+		filter.addEventListener("search", selectKeyHandler, false);
+
+		var list = document.createElement("ul");
+		list.classList.add("xiopop_selectableList");
+		list.addEventListener("click", function(e) {
+			var target = e.target;
+			if(target.nodeName==="LI") {
+				callback(options[target.dataset.id]);
+				close();
+			}
+		});
+        list.addEventListener("mousemove", function(e) {
+            var target = e.target;
+			if(target.nodeName==="LI") {
+                selectItem(target);
+            }
+        });
+		for(var i=0; i<options.length; i++) {
+			var item = options[i];
+			var li = document.createElement("li");
+			li.textContent = item.text;
+			li.dataset.id = i;
+            if(i===0) li.classList.add("selected");
+			item.li = li;
+			list.appendChild(li);
+		}
+
 		box.appendChild(filter);
 		box.appendChild(list);
 		showBox();
 		filter.focus();
-        
-        
+
+
         function selectItem(li) {
             for(var i=0; i<list.children.length; i++) {
                 list.children[i].classList.remove("selected");
             }
             li.classList.add("selected");
         }
-		
-		
+
+
 		function selectKeyHandler(e) {
             switch(e.which) {
                 case KEY_ENTER:
                 debugger;
                 var first = list.querySelector("li");
                 if(!first) return;
-                callback(items[first]);
+                callback(options[first]);
                 close();
                 return;
                 break;
@@ -293,13 +319,13 @@ var XioPop = (function() {
                 return;
                 break;
             }
-            
-            
-            var searchString = e.target.value.toLowerCase();
-            console.log("filter items '"+searchString+"'", items);
 
-            for(var i in items) {
-                var item = items[i];
+
+            var searchString = e.target.value.toLowerCase();
+            console.log("filter options '"+searchString+"'", options);
+
+            for(var i in options) {
+                var item = options[i];
                 console.log("Item", item);
 
                 if(item.text.toLowerCase().search(searchString)!=-1) {
@@ -310,15 +336,17 @@ var XioPop = (function() {
             }
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	function show() {
-		document.body.classList.add("xiopop_open");		
+		init();
+		box.className = "xiopop_box";
+		document.body.classList.add("xiopop_open");
 	}
-	
-	
+
+
 	function showElement(element) {
 		show();
 		box.classList.add("xiopop_html");
@@ -326,31 +354,29 @@ var XioPop = (function() {
 		fog.show();
 		box.appendChild(element);
 		showBox();
-	
+
 	}
-	
-	
-	
-	
-	function showBox() {	
+
+
+	function showBox() {
 		box.classList.add("visible");
 		centerBox();
 		addEventListener("resize", winResize, false);
 		addEventListener("keydown", keyHandler, false);
 	}
-	
-	
+
+
 	function keyHandler(e) {
 		if(e.keyCode==KEY_ESC && closeOnClickOutside) {
 			close();
 		}
 	}
-	
-	
+
+
 	function close() {
 		box.classList.remove("visible");
 		box.innerHTML = "";
-		
+
 		fog.hide(true);
 		removeEventListener("resize", winResize, false);
 		document.body.classList.remove("xiopop_open");
@@ -361,35 +387,43 @@ var XioPop = (function() {
 
 	function addTitle(title) {
 		var txtTitle = document.createElement("div");
-		txtTitle.id = "xiopop_box_title";
+		txtTitle.classList.add("xiopop_title");
 		txtTitle.textContent = title;
 		box.appendChild(txtTitle);
 		return txtTitle;
 	}
-	
+
 	function addText(text) {
 		var txtText = document.createElement("p");
 		txtText.innerHTML = text;
 		box.appendChild(txtText);
 		return txtText;
 	}
-	
+
 	function addButtonSet(parent) {
 		var buttonSet = document.createElement("div");
 		buttonSet.classList.add("xiopop_button_set");
 		parent.appendChild(buttonSet);
 		return buttonSet;
 	}
-	
-	
-	
-	
-	
+
+	function addClose() {
+		var btnClose = document.createElement('div');
+		btnClose.classList.add("xiopop_close");
+		btnClose.innerHTML = "x";
+		btnClose.addEventListener("click", close, false);
+		box.appendChild(btnClose);
+	}
+
+
+
+
+
 	function winResize(e) {
 		centerBox();
 	}
-	
-	
+
+
 	function centerBox() {
 		var top = (xiopop.offsetHeight - box.offsetHeight) / 2;
 		//var left = (xiopop.offsetWidth - box.offsetWidth) / 2;
@@ -400,16 +434,17 @@ var XioPop = (function() {
 	}
 
 
-	init();
 	return {
 		close: close,
 		alert: alert,
 		confirm: confirm,
 		prompt: prompt,
 		load: load,
+		choose: choose,
 		select: select,
 		show: show,
 		showElement: showElement,
-		fog: fog
+		fog: fog,
+		center: centerBox
 	}
 })();

@@ -10,11 +10,13 @@
 	display: none;
 	overflow: auto;
 	text-align: center;
+	font: 14px sans-serif;
 }
 
 
 .xiopop_box {
 	display: none;
+	position: relative;
 	background-color: white;
 	padding: 20px;
 	margin: 20px;
@@ -27,13 +29,29 @@
 	display: inline-block;
 }
 
-.xiopop_box_title {
-	font-size: 1.4em;
+.xiopop_title {
+	font-size: 1.2em;
 	text-align: center;
-	margin-bottom: 1em;
+	margin-bottom: 0.5em;
+	font-weight: bold;
 }
 
-
+.xiopop_close {
+	position: absolute;
+	top: -15px;
+	right: -15px;
+	padding: 4px 10px 6px;
+	border-radius: 50%;
+	background-color: #ccc;
+	border: 4px solid #fff;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+	font: bold 15px sans-serif;
+	color: white;
+	cursor: pointer;
+}
+.xiopop_close:hover {
+	background-color: #aaa;
+}
 
 .xiopop .hidden {
 	display: none;
@@ -60,10 +78,52 @@
 }
 
 
-
-.xiopop_button_set>button {
+/*** BUTTONS ***/
+.xiopop_button_set button {
 	padding: 6px 15px;
+	margin-left: 0.5em;
+	background-color: #ddd;
+	border-radius: 0.5em;
+	border: 0;
+	cursor: pointer;
 }
+.xiopop_button_set button:hover {
+	background-color: #aaa;
+}
+
+
+/*** TEXT INPUTS ***/
+.xiopop textarea,
+.xiopop input[type="text"],
+.xiopop input[type="search"] {
+	background-color: #eed;
+	box-shadow: 0px 1px 4px rgba(0,0,0,0.3) inset;
+	padding: 0.6em;
+    border: 0;
+	outline: 0;
+}
+.xiopop input[type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/*** SELECTABLE LIST ***/
+.xiopop_selectableList {
+	padding: 0;
+	margin: 1em 0 0 0;
+}
+.xiopop_selectableList li {
+    list-style-type: none;
+    text-align: left;
+    padding: 0.3em 0.5em;
+    background-color: #eee;
+    margin-bottom: 2px;
+	cursor: pointer;
+}
+.xiopop_selectableList li.selected {
+	background-color: #ccc;
+}
+
+
 
 
 /*** ALERT ***/
@@ -84,10 +144,9 @@
 }
 .xiopop_prompt input {
 	width: 100%;
-	margin-bottom: 1em;
+	margin: 0.5em 0 1em 0;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
-	padding: 0.5em;
 }
 
 /*** HTML ***/
@@ -98,29 +157,9 @@
 
 /*** SELECT ***/
 .xiopop_select input {
-    background-color: #eed;
-    border: 0;
-    padding: 0.4em 0.5em;
     margin: 0;
-    box-shadow: 0px 1px 4px rgba(0,0,0,0.3) inset;
 }
-.xiopop_select input:focus {
-    outline: none;   
-}
-.xiopop_select .selectableList {
-	padding: 0;
-	margin: 1em 0 0 0;
-}
-.xiopop_select .selectableList li {
-    list-style-type: none;
-    text-align: left;
-    padding: 0.3em 0.5em;
-    background-color: #eee;
-    margin-bottom: 2px;
-}
-.xiopop_select .selectableList li.selected {
-	background-color: #ccc;
-}
+
 
 
 #xiopop_prompt_label {

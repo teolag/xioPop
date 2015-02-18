@@ -5,50 +5,68 @@ var btnPage = document.getElementById("btnPage");
 var btnForm = document.getElementById("btnForm");
 var btnWebPage = document.getElementById("btnWebPage");
 var btnSelect = document.getElementById("btnSelect");
+var btnChoose = document.getElementById("btnChoose");
 
 
 
 btnAlert.addEventListener("click", function(e) {
-	XioPop.alert("Du har skrivarproblem", "Var god se skrivarens bruksanvisning"); 
+	XioPop.alert("Du har skrivarproblem", "Var god se skrivarens bruksanvisning");
 }, false);
 
 
 btnConfirm.addEventListener("click", function(e) {
 	XioPop.confirm("Äta glass?", "Är du säker på att du verkligen vill äta glass?", function(answer) {
 		console.log("The answer was:", answer);
-	}); 
+	});
 }, false);
 
 
 btnPrompt.addEventListener("click", function(e) {
 	XioPop.prompt("Vad heter du?", "Skriv in ditt fullständiga namn:", "", function(answer) {
 		console.log("Answer:", answer);
-	}); 
+	});
 }, false);
 
 
 btnPage.addEventListener("click", function(e) {
-	XioPop.load("lorem_ipsum.txt"); 
+	XioPop.load("lorem_ipsum.txt");
 }, false);
 
 
 btnWebPage.addEventListener("click", function(e) {
-	XioPop.load("http://dn.se"); 
+	XioPop.load("page.html");
 }, false);
 
 
 btnForm.addEventListener("click", function(e) {
-	XioPop.load("form.php", function(e) {
-		var form = document.getElementById("frmAddPerson");
+	XioPop.load("form.php", function(e, content) {
+		var form = content.querySelector("#frmAddPerson");
 		console.log("Form loaded", form);
 		form.addEventListener("submit", formSaved, false);
-	}); 
+
+		function formSaved(e) {
+			e.preventDefault();
+			console.debug("Send post to save form");
+			XioPop.close();
+		}
+	});
 }, false);
 
 
+btnChoose.addEventListener("click", function(e) {
+	var options = [
+		{id:"glass", text:"Äta glass i parken"},
+		{id:"jogga", text:"Jogga ett varv runt kvarteret"}
+	];
+	XioPop.choose("Välj ett av valen", "Vad vill du göra i eftermiddag?", options, function(answer) {
+		console.log("Chosen option:", answer)
+	});
+
+}, false);
+
 btnSelect.addEventListener("click", function(e) {
 
-	var list = [
+	var options = [
 		{id:1, text:"Val ett"},
 		{id:2, text:"Val två"},
 		{id:3, text:"Val tre"},
@@ -73,24 +91,13 @@ btnSelect.addEventListener("click", function(e) {
 		{id:21, text:"Val tjugoett"},
 	];
 
-	XioPop.select(list, function(chosen) {
+	XioPop.select(options, function(chosen) {
 		console.log("Chosen list item:", chosen);
 	});
 }, false);
 
 
 
-function formSaved(e) {
-	e.preventDefault();
-	var form = e.target;
-	var xhr = new XMLHttpRequest();
-	
-	xhr.open("post", "index.php", true);
-	var formData = new FormData(form);
-	xhr.send(formData);
-	
-	XioPop.close();
-}
 
 
 
