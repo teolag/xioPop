@@ -1,63 +1,15 @@
 var XioPop = (function() {
-	var xiopop, box;
+	var xiopop, box, fog;
 	var closeOnClickOutside;
-    var KEY_ENTER=13, KEY_ESC=27, KEY_UP=38, KEY_DOWN=40;
-
-
-	var fog = (function() {
-		var div;
-
-		function init() {
-			div = document.createElement('div');
-			div.classList.add("xiopop_fog");
-			document.body.appendChild(div);
-		}
-
-		function show() {
-			if(isVisible()) return;
-			div.classList.add("visible");
-			setTimeout(function() {
-				div.classList.add("dimmed");
-			}, 1);
-		}
-
-		function hide(removeAfterFogHide) {
-			div.classList.remove("dimmed");
-
-			if(removeAfterFogHide) {
-				setTimeout(function() {
-					div.classList.remove("visible");
-				}, 300);
-			}
-		}
-
-		function isVisible() {
-			return div.classList.contains("visible");
-		}
-
-
-		function tryToClose(e) {
-			if(e.target===div && closeOnClickOutside) {
-				close();
-			}
-		}
-
-
-		return {
-			init: init,
-			show: show,
-			hide: hide,
-			isVisible: isVisible
-		}
-	})();
-
+    var KEY_ENTER=13, KEY_ESC=27, KEY_UP=38, KEY_DOWN=40, KEY_LEFT=37, KEY_RIGHT=39, KEY_TAB=9;
+	var lastFocus;
+	var tabStops;
 
 
 
 	function init() {
 		if(xiopop) return;
 
-		fog.init();
 		console.log("Initializing XioPop");
 
 		xiopop = document.createElement('div');
@@ -69,6 +21,9 @@ var XioPop = (function() {
 		}, false);
 		document.body.appendChild(xiopop);
 
+		fog = document.createElement('div');
+		fog.classList.add("xiopop_fog");
+		xiopop.appendChild(fog);
 
 		box = document.createElement('div');
 		box.classList.add("xiopop_box");
@@ -97,7 +52,6 @@ var XioPop = (function() {
 		}, false);
 
 		buttonSet.appendChild(btnOK);
-		fog.show();
 		showBox();
 	}
 
@@ -145,7 +99,6 @@ var XioPop = (function() {
 		}, false);
 		buttonSet.appendChild(btnCancel);
 
-		fog.show();
 		showBox();
 		input.focus();
 	}
@@ -175,7 +128,6 @@ var XioPop = (function() {
 
 		buttonSet.appendChild(btnYes);
 		buttonSet.appendChild(btnNo);
-		fog.show();
 		showBox();
 
 
@@ -208,7 +160,6 @@ var XioPop = (function() {
 		}
 
 		xhr.send();
-		fog.show();
 	}
 
 
@@ -250,7 +201,6 @@ var XioPop = (function() {
 		box.classList.add("xiopop_select");
 		console.log("Show selectlist");
 		closeOnClickOutside=true;
-		fog.show();
 
 		var filter = document.createElement("input");
 		filter.type="search";
@@ -343,7 +293,8 @@ var XioPop = (function() {
 	function show() {
 		init();
 		box.className = "xiopop_box";
-		document.body.classList.add("xiopop_open");
+		lastFocus = document.activeElement;
+		lastFocus.blur();
 	}
 
 
@@ -354,35 +305,61 @@ var XioPop = (function() {
 		fog.show();
 		box.appendChild(element);
 		showBox();
-
 	}
 
 
 	function showBox() {
-		box.classList.add("visible");
+		setTimeout(function() {
+			box.classList.add("visible");
+			fog.classList.add("visible");
+		}, 1);
+
 		centerBox();
 		addEventListener("resize", winResize, false);
 		addEventListener("keydown", keyHandler, false);
+
+		document.body.style.overflow = "hidden";
+
+		tabStops = box.querySelectorAll('button, input, textarea, select');
+		tabIndex = 0;
+	}
+
+
+
+
+	function close() {
+		fog.classList.remove("visible");
+		box.classList.remove("visible");
+		setTimeout(function() {
+			xiopop.parentElement.removeChild(xiopop);
+			xiopop=null;
+			document.body.style.overflow = "";
+		}, 300);
+
+
+		removeEventListener("resize", winResize, false);
+		removeEventListener("keydown", keyHandler, false);
+
 	}
 
 
 	function keyHandler(e) {
-		if(e.keyCode==KEY_ESC && closeOnClickOutside) {
+		if(e.keyCode===KEY_ESC && closeOnClickOutside) {
 			close();
 		}
+
+		if(e.keyCode===KEY_TAB) {
+			e.preventDefault();
+			if(tabStops.length===0) return;
+			tabIndex = (tabIndex+(e.shiftKey?-1:1)) % tabStops.length;
+			if(tabIndex<0) tabIndex = tabStops.length-1;
+
+
+			tabStops[tabIndex].focus();
+
+
+		}
 	}
-
-
-	function close() {
-		box.classList.remove("visible");
-		box.innerHTML = "";
-
-		fog.hide(true);
-		removeEventListener("resize", winResize, false);
-		document.body.classList.remove("xiopop_open");
-	}
-
-
 
 
 	function addTitle(title) {
@@ -408,9 +385,10 @@ var XioPop = (function() {
 	}
 
 	function addClose() {
-		var btnClose = document.createElement('div');
+		var btnClose = document.createElement('button');
 		btnClose.classList.add("xiopop_close");
 		btnClose.innerHTML = "x";
+		btnClose.type="button";
 		btnClose.addEventListener("click", close, false);
 		box.appendChild(btnClose);
 	}
@@ -444,7 +422,6 @@ var XioPop = (function() {
 		select: select,
 		show: show,
 		showElement: showElement,
-		fog: fog,
 		center: centerBox
 	}
 })();
