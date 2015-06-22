@@ -77,7 +77,7 @@
 
 
 /*** BUTTONS ***/
-.xiopop_button_set button {
+.xiopop_buttonset button {
 	padding: 6px 15px;
 	margin-left: 0.5em;
 	background: #7ad;
@@ -88,7 +88,7 @@
   	box-shadow: none;
 	text-shadow: none;
 }
-.xiopop_button_set button:hover {
+.xiopop_buttonset button:hover {
 	background: #679;
 }
 

@@ -10,20 +10,34 @@ var btnChoose = document.getElementById("btnChoose");
 
 
 btnAlert.addEventListener("click", function(e) {
-	XioPop.alert("Du har skrivarproblem", "Var god se skrivarens bruksanvisning");
-}, false);
-
-
-btnConfirm.addEventListener("click", function(e) {
-	XioPop.confirm("Äta glass?", "Är du säker på att du verkligen vill äta glass?", function(answer) {
-		console.log("The answer was:", answer);
+	XioPop.alert({
+		title: "Du har skrivarproblem",
+		text: "Var god se skrivarens bruksanvisning",
+		onClose: function() {
+			console.log("callback after alert close");
+		}
 	});
 }, false);
 
 
 btnPrompt.addEventListener("click", function(e) {
-	XioPop.prompt("Vad heter du?", "Skriv in ditt fullständiga namn:", "", function(answer) {
-		console.log("Answer:", answer);
+	XioPop.prompt({
+		title: "Vad heter du?",
+		label: "Skriv in ditt fullständiga namn:",
+		onSubmit: function(answer) {
+			console.log("Answer:", answer);
+		}
+	});
+}, false);
+
+
+btnConfirm.addEventListener("click", function(e) {
+	XioPop.confirm({
+		title: "Äta glass?",
+		text: "Är du säker på att du verkligen vill äta glass?",
+		onSubmit: function(answer) {
+			console.log("The answer was:", answer);
+		}
 	});
 }, false);
 

@@ -1,145 +1,230 @@
-var XioPop = (function() {
+(function () {
+	var KEY_ENTER=13,
+		KEY_ESC=27,
+		KEY_UP=38,
+		KEY_DOWN=40,
+		KEY_LEFT=37,
+		KEY_RIGHT=39,
+		KEY_TAB=9;
+
+
+	var _ = self.XioPop = function(type, options) {
+		var pop = this;
+
+		console.log("Creating xioPop", type, options);
+
+		pop.options = options;
+		pop.options.closeOnClickOutside = true;
+
+		pop.xiopop = create('div', {class:"xiopop", appendTo: document.body});
+		pop.fog = create('div', {class:"xiopop_fog", onClick: onFogClick, appendTo:pop.xiopop});
+		pop.box = create('div', {class:"xiopop_box xiopop_"+type, appendTo:pop.xiopop});
+
+		var btnClose = create('button', {class:"xiopop_close", text:'x', type:'button', onClick:onCloseClick, appendTo: pop.box});
+
+
+		if(options.title) {
+			var txtTitle = create("div", {class:"xiopop_title", text:options.title, appendTo:pop.box});
+		}
+
+		if(options.text) {
+			var txtText = create("p", {html:options.text, appendTo:pop.box});
+		}
+
+		function onFogClick(e) {
+			if(e.target===pop.fog && options.closeOnClickOutside) {
+				pop.close();
+			}
+		}
+		function onCloseClick(e) {
+			pop.close();
+		}
+	};
+
+	_.prototype = {
+
+		show: function() {
+			var pop = this;
+
+			setTimeout(function() {
+				pop.box.classList.add("visible");
+				pop.fog.classList.add("visible");
+			}, 1);
+
+			pop.lastFocus = document.activeElement;
+			pop.lastFocus.blur();
+			pop.center();
+
+			pop.resizeListener = this.winResize.bind(pop);
+			pop.keydownListener = this.keyHandler.bind(pop);
+			addEventListener("resize", pop.resizeListener, false);
+			addEventListener("keydown", pop.keydownListener, false);
+
+			document.body.style.overflow = "hidden";
+
+			pop.tabStops = pop.box.querySelectorAll('button, input, textarea, select, a');
+			pop.tabIndex = 0;
+		},
+
+		center: function() {
+			var top = (this.xiopop.offsetHeight - this.box.offsetHeight) / 2;
+			if(top<20) top=20;
+			this.box.style.marginTop = top + "px";
+		},
+
+		close: function() {
+			var pop = this;
+			pop.fog.classList.remove("visible");
+			pop.box.classList.remove("visible");
+			setTimeout(function() {
+				pop.xiopop.parentElement.removeChild(pop.xiopop);
+				pop.xiopop=null;
+				document.body.style.overflow = "";
+			}, 300);
+
+			if(pop.options.onClose) pop.options.onClose();
+			pop.lastFocus.focus();
+			removeEventListener("resize", pop.resizeListener, false);
+			removeEventListener("keydown", pop.keydownListener, false);
+		},
+
+		winResize: function(e) {
+			this.center();
+		},
+
+
+		keyHandler: function(e) {
+			if(e.keyCode===KEY_ESC && closeOnClickOutside) {
+				this.close();
+			}
+
+			if(e.keyCode===KEY_TAB) {
+				e.preventDefault();
+				if(this.tabStops.length===0) return;
+				this.tabIndex = (this.tabIndex+(e.shiftKey?-1:1)) % this.tabStops.length;
+				if(this.tabIndex<0) this.tabIndex = this.tabStops.length-1;
+
+
+				this.tabStops[this.tabIndex].focus();
+			}
+		}
+
+
+	};
+
+
+
+
+
+	_.alert = function(options) {
+		var pop = initPop("alert", options);
+
+		var buttonset = create("div", {class:"xiopop_buttonset", appendTo:pop.box});
+		var btnOK = create("button", {type:"button", onClick:onClick, text:"OK", appendTo: buttonset});
+
+		pop.show();
+		return pop;
+
+		function onClick(e) {
+			pop.close();
+		}
+	};
+
+	_.prompt = function(options) {
+		var pop = initPop("prompt", options);
+
+		var form = create("form", { onSubmit: onSubmit, appendTo: pop.box});
+		var lblPrompt = create('label', {for:'xiopop_prompt_label', text:options.label, appendTo:form});
+		var input = create("input", {id:"xiopop_prompt_label", type:"text", value: options.value || "", appendTo:form});
+		var buttonset = create("div", {class:"xiopop_buttonset", appendTo:form});
+		var btnOK = create("button", {type:"submit", text:"OK", appendTo: buttonset});
+		var btnCancel = create("button", {type:"button", text:"Cancel", onClick:onCancel, appendTo:buttonset});
+
+		pop.show();
+		input.focus();
+
+		return pop;
+
+		function onSubmit(e) {
+			e.preventDefault();
+			pop.close();
+			if(options.hasOwnProperty("onSubmit")) options.onSubmit(input.value);
+		}
+
+		function onCancel(e) {
+			pop.close();
+		}
+	};
+
+
+	_.confirm = function(options) {
+		var pop = initPop("confirm", options);
+
+		var buttonset = create("div", {class:"xiopop_buttonset", appendTo:pop.box});
+		var btnYes = create("button", {type:"button", onClick:confirmClick, text:"Yes", appendTo: buttonset});
+		var btnNo = create("button", {type:"button", onClick:confirmClick, text:"No", appendTo: buttonset});
+		pop.show();
+
+		function confirmClick(e) {
+			pop.close();
+			if(e.target===btnYes) {
+				options.onSubmit(true);
+			} else if(e.target===btnNo) {
+				options.onSubmit(false);
+			}
+		}
+	};
+
+
+
+
+
+	var initPop = function(type, options) {
+		options = options || {};
+		return pop = new XioPop(type, options);
+	};
+
+	function create(type, o) {
+		var element = document.createElement(type);
+
+		for(var key in o) {
+			switch(key) {
+				case 'id': element.id = o.id; break;
+				case 'class': element.className = o.class; break;
+				case 'for': element.setAttribute('for', o.for); break;
+				case 'type': element.type = o.type; break;
+				case 'value': element.value = o.value; break;
+				case 'text': element.textContent = o.text; break;
+				case 'html': element.innerHTML = o.html; break;
+				case 'onSubmit': element.addEventListener("submit", o.onSubmit, false); break;
+				case 'onClick': element.addEventListener("click", o.onClick, false); break;
+				case 'appendTo': o.appendTo.appendChild(element); break;
+
+				default:
+					console.warn("Unhandled key '"+key+"' in create element method");
+			}
+		}
+		return element;
+	}
+
+}());
+
+/*
 	var xiopop, box, fog;
 	var closeOnClickOutside;
-    var KEY_ENTER=13, KEY_ESC=27, KEY_UP=38, KEY_DOWN=40, KEY_LEFT=37, KEY_RIGHT=39, KEY_TAB=9;
-	var lastFocus;
+    var lastFocus;
 	var tabStops;
 
 
 
-	function init() {
-		if(xiopop) return;
-
-		console.log("Initializing XioPop");
-
-		xiopop = document.createElement('div');
-		xiopop.classList.add("xiopop");
-		xiopop.addEventListener("click", function(e) {
-			if(e.target===xiopop && closeOnClickOutside) {
-				close();
-			}
-		}, false);
-		document.body.appendChild(xiopop);
-
-		fog = document.createElement('div');
-		fog.classList.add("xiopop_fog");
-		xiopop.appendChild(fog);
-
-		box = document.createElement('div');
-		box.classList.add("xiopop_box");
-		xiopop.appendChild(box);
-	}
 
 
 
 
-	function alert(title, text, callback) {
-		show();
-		box.classList.add("xiopop_alert");
-		closeOnClickOutside=false;
-
-		var txtTitle = addTitle(title);
-		var txtText = addText(text);
-
-		var buttonSet = addButtonSet(box);
-
-		var btnOK = document.createElement("button");
-		btnOK.type = "button";
-		btnOK.textContent = "OK";
-		btnOK.addEventListener("click", function(e) {
-			close();
-			if(callback) callback();
-		}, false);
-
-		buttonSet.appendChild(btnOK);
-		showBox();
-	}
-
-	function prompt(title, label, oldText, callback) {
-		show();
-		addClose();
-		box.classList.add("xiopop_prompt");
-		closeOnClickOutside=false;
-		var txtTitle = addTitle(title);
-
-		var form = document.createElement("form");
-		form.addEventListener("submit", function(e) {
-			e.preventDefault();
-			close();
-			callback(input.value);
-		}, false);
-
-		var lblPrompt = document.createElement("label");
-		lblPrompt.setAttribute("for", "xiopop_prompt_label");
-		lblPrompt.textContent = label;
-		form.appendChild(lblPrompt);
 
 
-		var input = document.createElement("input");
-		input.id = "xiopop_prompt_label";
-		input.type = "text";
-		input.value = oldText;
-		form.appendChild(input);
-
-		box.appendChild(form);
-
-		var buttonSet = addButtonSet(form);
-
-		var btnOK = document.createElement("button");
-		btnOK.type = "submit";
-		btnOK.textContent = "OK";
-		buttonSet.appendChild(btnOK);
-
-		var btnCancel = document.createElement("button");
-		btnCancel.type = "button";
-		btnCancel.textContent = "Cancel";
-		btnCancel.addEventListener("click", function(e) {
-			close();
-			callback(false);
-		}, false);
-		buttonSet.appendChild(btnCancel);
-
-		showBox();
-		input.focus();
-	}
 
 
-	function confirm(title, text, callback) {
-		show();
-		box.classList.add("xiopop_confirm");
-		closeOnClickOutside=false;
-
-		var txtTitle = addTitle(title);
-		var txtText = addText(text);
-
-
-		var buttonSet = addButtonSet(box);
-
-
-		var btnYes = document.createElement("button");
-		btnYes.type = "button";
-		btnYes.textContent = "Yes";
-		btnYes.addEventListener("click", confirmClick, false);
-
-		var btnNo = document.createElement("button");
-		btnNo.type = "button";
-		btnNo.textContent = "No";
-		btnNo.addEventListener("click", confirmClick, false);
-
-		buttonSet.appendChild(btnYes);
-		buttonSet.appendChild(btnNo);
-		showBox();
-
-
-		function confirmClick(e) {
-			close();
-			if(e.target==btnYes) {
-				callback(true);
-			} else if(e.target==btnNo) {
-				callback(false);
-			}
-		}
-	}
 
 
 	function load(url, callback) {
@@ -290,138 +375,4 @@ var XioPop = (function() {
 
 
 
-	function show() {
-		init();
-		box.className = "xiopop_box";
-		lastFocus = document.activeElement;
-		lastFocus.blur();
-	}
-
-
-	function showElement(element) {
-		show();
-		box.classList.add("xiopop_html");
-		closeOnClickOutside=true;
-		fog.show();
-		box.appendChild(element);
-		showBox();
-	}
-
-
-	function showBox() {
-		setTimeout(function() {
-			box.classList.add("visible");
-			fog.classList.add("visible");
-		}, 1);
-
-		centerBox();
-		addEventListener("resize", winResize, false);
-		addEventListener("keydown", keyHandler, false);
-
-		document.body.style.overflow = "hidden";
-
-		tabStops = box.querySelectorAll('button, input, textarea, select');
-		tabIndex = 0;
-	}
-
-
-
-
-	function close() {
-		fog.classList.remove("visible");
-		box.classList.remove("visible");
-		setTimeout(function() {
-			xiopop.parentElement.removeChild(xiopop);
-			xiopop=null;
-			document.body.style.overflow = "";
-		}, 300);
-
-
-		removeEventListener("resize", winResize, false);
-		removeEventListener("keydown", keyHandler, false);
-
-	}
-
-
-	function keyHandler(e) {
-		if(e.keyCode===KEY_ESC && closeOnClickOutside) {
-			close();
-		}
-
-		if(e.keyCode===KEY_TAB) {
-			e.preventDefault();
-			if(tabStops.length===0) return;
-			tabIndex = (tabIndex+(e.shiftKey?-1:1)) % tabStops.length;
-			if(tabIndex<0) tabIndex = tabStops.length-1;
-
-
-			tabStops[tabIndex].focus();
-
-
-		}
-	}
-
-
-	function addTitle(title) {
-		var txtTitle = document.createElement("div");
-		txtTitle.classList.add("xiopop_title");
-		txtTitle.textContent = title;
-		box.appendChild(txtTitle);
-		return txtTitle;
-	}
-
-	function addText(text) {
-		var txtText = document.createElement("p");
-		txtText.innerHTML = text;
-		box.appendChild(txtText);
-		return txtText;
-	}
-
-	function addButtonSet(parent) {
-		var buttonSet = document.createElement("div");
-		buttonSet.classList.add("xiopop_button_set");
-		parent.appendChild(buttonSet);
-		return buttonSet;
-	}
-
-	function addClose() {
-		var btnClose = document.createElement('button');
-		btnClose.classList.add("xiopop_close");
-		btnClose.innerHTML = "x";
-		btnClose.type="button";
-		btnClose.addEventListener("click", close, false);
-		box.appendChild(btnClose);
-	}
-
-
-
-
-
-	function winResize(e) {
-		centerBox();
-	}
-
-
-	function centerBox() {
-		var top = (xiopop.offsetHeight - box.offsetHeight) / 2;
-		//var left = (xiopop.offsetWidth - box.offsetWidth) / 2;
-		if(top<20) top=20;
-		//if(left<20) left=20;
-		box.style.marginTop = top + "px";
-		//box.style.left = left + "px";
-	}
-
-
-	return {
-		close: close,
-		alert: alert,
-		confirm: confirm,
-		prompt: prompt,
-		load: load,
-		choose: choose,
-		select: select,
-		show: show,
-		showElement: showElement,
-		center: centerBox
-	}
-})();
+*/
