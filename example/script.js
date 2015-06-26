@@ -42,48 +42,27 @@ btnConfirm.addEventListener("click", function(e) {
 }, false);
 
 
-btnPage.addEventListener("click", function(e) {
-	XioPop.load("lorem_ipsum.txt");
-}, false);
-
-
-btnWebPage.addEventListener("click", function(e) {
-	XioPop.load("page.html");
-}, false);
-
-
-btnForm.addEventListener("click", function(e) {
-	XioPop.load("form.php", function(e, content) {
-		var form = content.querySelector("#frmAddPerson");
-		console.log("Form loaded", form);
-		form.addEventListener("submit", formSaved, false);
-
-		function formSaved(e) {
-			e.preventDefault();
-			console.debug("Send post to save form");
-			XioPop.close();
+btnChoose.addEventListener("click", function(e) {
+	var options = [
+		{id:"glass", text:"Äta glass i parken"},
+		{id:"ro", text:"Ro till Kanada"},
+		{id:"bygga", text:"Bygga en stor katt av granbarr"},
+		{id:"jogga", text:"Jogga ett varv runt kvarteret"}
+	];
+	XioPop.select({
+		title:"Välj ett av valen",
+		text:"Vad vill du göra i eftermiddag?",
+		options: options,
+		onSubmit: function(answer) {
+			console.log("Chosen option:", answer)
 		}
 	});
 }, false);
 
-
-btnChoose.addEventListener("click", function(e) {
-	var options = [
-		{id:"glass", text:"Äta glass i parken"},
-		{id:"jogga", text:"Jogga ett varv runt kvarteret"}
-	];
-	XioPop.choose("Välj ett av valen", "Vad vill du göra i eftermiddag?", options, function(answer) {
-		console.log("Chosen option:", answer)
-	});
-
-}, false);
-
 btnSelect.addEventListener("click", function(e) {
-
 	var options = [
 		{id:1, text:"Val ett"},
 		{id:2, text:"Val två"},
-		{id:3, text:"Val tre"},
 		{id:3, text:"Val tre"},
 		{id:4, text:"Val fyra"},
 		{id:5, text:"Val fem"},
@@ -105,8 +84,40 @@ btnSelect.addEventListener("click", function(e) {
 		{id:21, text:"Val tjugoett"},
 	];
 
-	XioPop.select(options, function(chosen) {
-		console.log("Chosen list item:", chosen);
+	XioPop.select({
+		title: "Välj",
+		text: "Vad väljer du?",
+		options: options,
+		onSubmit: function(chosen) {
+			console.log("Chosen list item:", chosen);
+		}
+	});
+}, false);
+
+
+
+
+btnPage.addEventListener("click", function(e) {
+	XioPop.load({url:"lorem_ipsum.txt"});
+}, false);
+
+
+btnWebPage.addEventListener("click", function(e) {
+	XioPop.load("page.html");
+}, false);
+
+
+btnForm.addEventListener("click", function(e) {
+	XioPop.load("form.php", function(e, content) {
+		var form = content.querySelector("#frmAddPerson");
+		console.log("Form loaded", form);
+		form.addEventListener("submit", formSaved, false);
+
+		function formSaved(e) {
+			e.preventDefault();
+			console.debug("Send post to save form");
+			XioPop.close();
+		}
 	});
 }, false);
 

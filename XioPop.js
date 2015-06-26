@@ -62,7 +62,7 @@
 
 			document.body.style.overflow = "hidden";
 
-			pop.tabStops = pop.box.querySelectorAll('button, input, textarea, select, a');
+			pop.tabStops = pop.box.querySelectorAll('button, input, textarea, select, a, *[tabindex]');
 			pop.tabIndex = 0;
 		},
 
@@ -164,6 +164,7 @@
 		var btnYes = create("button", {type:"button", onClick:confirmClick, text:"Yes", appendTo: buttonset});
 		var btnNo = create("button", {type:"button", onClick:confirmClick, text:"No", appendTo: buttonset});
 		pop.show();
+		return pop;
 
 		function confirmClick(e) {
 			pop.close();
@@ -174,6 +175,137 @@
 			}
 		}
 	};
+
+	_.select = function(options) {
+		var pop = initPop("select", options);
+
+		var filter = create("input", {type:'search', onKeyDown: selectKeyDown, onKeyUp: selectKeyUp, onSearch:selectKeyUp, appendTo:pop.box});
+		var list = create("ul", {class:'xiopop_selectableList', onClick: listClick, appendTo:pop.box});
+
+		var selectedIndex = 0;
+
+		filterOptions("");
+
+		pop.show();
+		filter.focus();
+
+		return pop;
+
+		function listClick(e) {
+			var li = e.target;
+			if(li.nodeName!=="LI") return;
+
+			selectItem(li);
+			options.onSubmit(options.options[li.dataset.index]);
+			pop.close();
+		}
+
+		function selectItem(li) {
+			var selected = list.querySelectorAll(".selected");
+			for(var i=0; i<selected.length; i++) {
+				selected[i].classList.remove("selected");
+			}
+			li.classList.add("selected");
+		}
+
+		function selectKeyDown(e) {
+            switch(e.keyCode) {
+				case KEY_ENTER:
+				e.preventDefault();
+				break;
+
+                case KEY_UP:
+                e.preventDefault();
+				var selected = list.querySelector(".selected");
+				var prev = selected.previousSibling;
+				if(prev) selectItem(prev);
+                break;
+
+                case KEY_DOWN:
+                e.preventDefault();
+				var selected = list.querySelector(".selected");
+				var next = selected.nextSibling;
+				if(next) selectItem(next);
+                break;
+            }
+		}
+
+		var lastSearchString;
+		function selectKeyUp(e) {
+			if(e.keyCode===KEY_UP || e.keyCode===KEY_DOWN) return;
+
+			if(e.keyCode===KEY_ENTER) {
+				var selected = list.querySelector(".selected");
+				if(!selected) return;
+                options.onSubmit(options.options[selected.dataset.index]);
+                pop.close();
+				e.preventDefault();
+				return;
+			}
+
+            var searchString = e.target.value.toLowerCase();
+			if(lastSearchString===searchString) return;
+			lastSearchString=searchString;
+
+			filterOptions(searchString);
+		}
+
+		function filterOptions(searchString) {
+			list.innerHTML="";
+			if(options.options.length>0) {
+				for(var i=0; i<options.options.length; i++) {
+					var item = options.options[i];
+					var html = item.text;
+
+					if(searchString) {
+						if(item.text.toLowerCase().search(searchString)===-1) continue;
+
+						var regexp = new RegExp("("+searchString+")", "gi");
+						html = html.replace(regexp, '<mark>$1</mark>');
+					}
+
+					var li = create("li", {html: html, data:{id:item.id, index:i}, appendTo: list});
+					if(i===0) li.classList.add("selected");
+					item.li = li;
+					item.index = i;
+				}
+
+				var selected = list.querySelector(".selected");
+				var first = list.querySelector("li");
+				if(!selected && !!first) {
+					selectItem(first);
+				}
+			} else {
+				var li = create("li", {text: "No functions found.", appendTo: list});
+			}
+		}
+	};
+
+	_.load = function(options) {
+		var pop = initPop("page", options);
+
+		var xhr = new XMLHttpRequest();
+		xhr.open("get", options.url, true);
+
+		xhr.onload = function(e) {
+			var content = document.createElement("div");
+			content.innerHTML = e.target.responseText;
+			pop.box.appendChild(content);
+			pop.center();
+			if(options.onLoad) options.onLoad(e, content);
+		}
+
+		pop.show();
+		xhr.send();
+		return pop;
+	};
+
+	_.showElement = function(options) {
+		var pop = initPop("element", options);
+		pop.box.appendChild(options.element);
+		pop.show();
+		return pop;
+	}
 
 
 
@@ -192,13 +324,24 @@
 				case 'id': element.id = o.id; break;
 				case 'class': element.className = o.class; break;
 				case 'for': element.setAttribute('for', o.for); break;
+				case 'tabindex': element.setAttribute('tabindex', o.tabindex); break;
 				case 'type': element.type = o.type; break;
 				case 'value': element.value = o.value; break;
 				case 'text': element.textContent = o.text; break;
 				case 'html': element.innerHTML = o.html; break;
 				case 'onSubmit': element.addEventListener("submit", o.onSubmit, false); break;
 				case 'onClick': element.addEventListener("click", o.onClick, false); break;
+				case 'onKeyUp': element.addEventListener("keyup", o.onKeyUp, false); break;
+				case 'onKeyDown': element.addEventListener("keydown", o.onKeyDown, false); break;
+				case 'onSearch': element.addEventListener("search", o.onSearch, false); break;
+				case 'onMouseMove': element.addEventListener("mousemove", o.onMouseMove, false); break;
 				case 'appendTo': o.appendTo.appendChild(element); break;
+
+				case 'data':
+					for(var k in o.data) {
+						element.dataset[k] = o.data[k];
+					}
+					break;
 
 				default:
 					console.warn("Unhandled key '"+key+"' in create element method");
@@ -208,171 +351,3 @@
 	}
 
 }());
-
-/*
-	var xiopop, box, fog;
-	var closeOnClickOutside;
-    var lastFocus;
-	var tabStops;
-
-
-
-
-
-
-
-
-
-
-
-
-
-	function load(url, callback) {
-		show();
-		addClose();
-		box.classList.add("xiopop_html");
-		closeOnClickOutside=true;
-
-		var xhr = new XMLHttpRequest();
-		xhr.open("get", url, true);
-
-		xhr.onload = function(e) {
-			var content = document.createElement("div");
-			content.innerHTML = e.target.responseText;
-			box.appendChild(content);
-			showBox();
-			if(callback) callback(e, content);
-		}
-
-		xhr.send();
-	}
-
-
-	function choose(title, text, options, callback) {
-		show();
-		addClose();
-		box.classList.add("xiopop_choose");
-
-		var txtTitle = addTitle(title);
-		var txtText = addText(text);
-
-		var list = document.createElement("ul");
-		list.classList.add("xiopop_selectableList");
-		list.addEventListener("click", function(e) {
-			var target = e.target;
-			if(target.nodeName==="LI") {
-				callback(options[target.dataset.id]);
-				close();
-			}
-		});
-
-		for(var i=0; i<options.length; i++) {
-			var item = options[i];
-			var li = document.createElement("li");
-			li.textContent = item.text;
-			li.dataset.id = i;
-            if(i===0) li.classList.add("selected");
-			item.li = li;
-			list.appendChild(li);
-		}
-
-		box.appendChild(list);
-		showBox();
-	}
-
-
-	function select(options, callback) {
-		show();
-		box.classList.add("xiopop_select");
-		console.log("Show selectlist");
-		closeOnClickOutside=true;
-
-		var filter = document.createElement("input");
-		filter.type="search";
-		filter.addEventListener("keyup", selectKeyHandler, false);
-		filter.addEventListener("search", selectKeyHandler, false);
-
-		var list = document.createElement("ul");
-		list.classList.add("xiopop_selectableList");
-		list.addEventListener("click", function(e) {
-			var target = e.target;
-			if(target.nodeName==="LI") {
-				callback(options[target.dataset.id]);
-				close();
-			}
-		});
-        list.addEventListener("mousemove", function(e) {
-            var target = e.target;
-			if(target.nodeName==="LI") {
-                selectItem(target);
-            }
-        });
-		for(var i=0; i<options.length; i++) {
-			var item = options[i];
-			var li = document.createElement("li");
-			li.textContent = item.text;
-			li.dataset.id = i;
-            if(i===0) li.classList.add("selected");
-			item.li = li;
-			list.appendChild(li);
-		}
-
-		box.appendChild(filter);
-		box.appendChild(list);
-		showBox();
-		filter.focus();
-
-
-        function selectItem(li) {
-            for(var i=0; i<list.children.length; i++) {
-                list.children[i].classList.remove("selected");
-            }
-            li.classList.add("selected");
-        }
-
-
-		function selectKeyHandler(e) {
-            switch(e.which) {
-                case KEY_ENTER:
-                debugger;
-                var first = list.querySelector("li");
-                if(!first) return;
-                callback(options[first]);
-                close();
-                return;
-                break;
-
-                case KEY_UP:
-                console.log("UP");
-                e.preventDefault();
-                return;
-                break;
-
-                case KEY_DOWN:
-                console.log("DOWN");
-                e.preventDefault();
-                return;
-                break;
-            }
-
-
-            var searchString = e.target.value.toLowerCase();
-            console.log("filter options '"+searchString+"'", options);
-
-            for(var i in options) {
-                var item = options[i];
-                console.log("Item", item);
-
-                if(item.text.toLowerCase().search(searchString)!=-1) {
-                    item.li.classList.remove('hidden');
-                } else {
-                    item.li.classList.add('hidden');
-                }
-            }
-		}
-	}
-
-
-
-
-*/

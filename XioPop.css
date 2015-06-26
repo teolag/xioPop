@@ -9,9 +9,8 @@
 	overflow: auto;
 	text-align: center;
 	font: 14px sans-serif;
-	z-index: 10;
+	color: #444;
 }
-
 
 .xiopop_box {
 	display: inline-block;
@@ -112,19 +111,35 @@
 .xiopop_selectableList {
 	padding: 0;
 	margin: 1em 0 0 0;
+	overflow: auto;
+	max-height: 300px;
+	box-shadow: 0px 1px 4px rgba(0,0,0,0.3) inset;
+	background-color: rgb(240, 246, 252);
+	border-radius: 0.2rem;
 }
 .xiopop_selectableList li {
     list-style-type: none;
     text-align: left;
-    padding: 0.3em 0.5em;
-    background-color: #eee;
-    margin-bottom: 2px;
+    padding: 0.3rem 0.5rem;
 	cursor: pointer;
 }
+.xiopop_selectableList li:hover {
+	background-color: rgb(219,232,244);
+}
 .xiopop_selectableList li.selected {
-	background-color: #ccc;
+	background-color: #7AD;
+	color: white;
+}
+.xiopop_selectableList li.selected:hover {
+	background-color: #7AD;
 }
 
+.xiopop_selectableList li mark {
+	background-color: transparent;
+	text-decoration: underline;
+	color: inherit;
+	font-weight: bold;
+}
 
 
 
@@ -150,6 +165,9 @@
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
+.xiopop_prompt label {
+	display: block;
+}
 
 /*** HTML ***/
 .xiopop_html {
@@ -164,7 +182,4 @@
 
 
 
-#xiopop_prompt_label {
-	display: block;
-}
 
