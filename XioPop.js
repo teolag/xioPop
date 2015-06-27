@@ -17,7 +17,6 @@
 		pop.options.closeOnClickOutside = true;
 
 		pop.xiopop = create('div', {class:"xiopop", appendTo: document.body});
-		pop.fog = create('div', {class:"xiopop_fog", onClick: onFogClick, appendTo:pop.xiopop});
 		pop.box = create('div', {class:"xiopop_box xiopop_"+type, appendTo:pop.xiopop});
 
 		var btnClose = create('button', {class:"xiopop_close", text:'x', type:'button', onClick:onCloseClick, appendTo: pop.box});
@@ -31,11 +30,6 @@
 			var txtText = create("p", {html:options.text, appendTo:pop.box});
 		}
 
-		function onFogClick(e) {
-			if(e.target===pop.fog && options.closeOnClickOutside) {
-				pop.close();
-			}
-		}
 		function onCloseClick(e) {
 			pop.close();
 		}
@@ -48,7 +42,7 @@
 
 			setTimeout(function() {
 				pop.box.classList.add("visible");
-				pop.fog.classList.add("visible");
+				pop.xiopop.classList.add("visible");
 			}, 1);
 
 			pop.lastFocus = document.activeElement;
@@ -74,13 +68,13 @@
 
 		close: function() {
 			var pop = this;
-			pop.fog.classList.remove("visible");
+			pop.xiopop.classList.remove("visible");
 			pop.box.classList.remove("visible");
 			setTimeout(function() {
 				pop.xiopop.parentElement.removeChild(pop.xiopop);
 				pop.xiopop=null;
 				document.body.style.overflow = "";
-			}, 300);
+			}, 3000);
 
 			if(pop.options.onClose) pop.options.onClose();
 			pop.lastFocus.focus();
@@ -206,6 +200,7 @@
 				selected[i].classList.remove("selected");
 			}
 			li.classList.add("selected");
+			li.scrollIntoView();
 		}
 
 		function selectKeyDown(e) {

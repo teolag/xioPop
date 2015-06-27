@@ -82,6 +82,7 @@ btnSelect.addEventListener("click", function(e) {
 		{id:19, text:"Val nitton"},
 		{id:20, text:"Val tjugo"},
 		{id:21, text:"Val tjugoett"},
+		{id:67575494, text:"Sextiosjumiljoner femhundrasjuttiofemtusen fyrahundranittiofyra"}
 	];
 
 	XioPop.select({
