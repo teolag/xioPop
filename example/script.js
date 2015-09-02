@@ -8,7 +8,6 @@ var btnSelect = document.getElementById("btnSelect");
 var btnChoose = document.getElementById("btnChoose");
 
 
-
 btnAlert.addEventListener("click", function(e) {
 	XioPop.alert({
 		title: "Du har skrivarproblem",
@@ -18,7 +17,6 @@ btnAlert.addEventListener("click", function(e) {
 		}
 	});
 }, false);
-
 
 btnPrompt.addEventListener("click", function(e) {
 	XioPop.prompt({
@@ -30,7 +28,6 @@ btnPrompt.addEventListener("click", function(e) {
 	});
 }, false);
 
-
 btnConfirm.addEventListener("click", function(e) {
 	XioPop.confirm({
 		title: "Äta glass?",
@@ -40,7 +37,6 @@ btnConfirm.addEventListener("click", function(e) {
 		}
 	});
 }, false);
-
 
 btnChoose.addEventListener("click", function(e) {
 	var options = [
@@ -95,53 +91,8 @@ btnSelect.addEventListener("click", function(e) {
 	});
 }, false);
 
-
-
-
 btnPage.addEventListener("click", function(e) {
 	XioPop.load({url:"lorem_ipsum.txt"});
 }, false);
 
 
-btnWebPage.addEventListener("click", function(e) {
-	XioPop.load("page.html");
-}, false);
-
-
-btnForm.addEventListener("click", function(e) {
-	XioPop.load("form.php", function(e, content) {
-		var form = content.querySelector("#frmAddPerson");
-		console.log("Form loaded", form);
-		form.addEventListener("submit", formSaved, false);
-
-		function formSaved(e) {
-			e.preventDefault();
-			console.debug("Send post to save form");
-			XioPop.close();
-		}
-	});
-}, false);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-var btnAlert2 = document.getElementById("btnAlert2");
-btnAlert2.addEventListener("click", function(e) {
-	var popAlert = new XioPop2("alert", {title:"Welcome", text:"Welcome to my site mr Unknown"});
-});
-
-
-*/

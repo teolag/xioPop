@@ -1,4 +1,6 @@
 (function () {
+	"use strict";
+
 	var KEY_ENTER=13,
 		KEY_ESC=27,
 		KEY_UP=38,
@@ -14,25 +16,31 @@
 		console.log("Creating xioPop", type, options);
 
 		pop.options = options;
-		pop.options.closeOnClickOutside = true;
+		pop.options.fogClickToClose = true;
 
 		pop.xiopop = create('div', {class:"xiopop", appendTo: document.body});
 		pop.box = create('div', {class:"xiopop_box xiopop_"+type, appendTo:pop.xiopop});
 
-		var btnClose = create('button', {class:"xiopop_close", text:'x', type:'button', onClick:onCloseClick, appendTo: pop.box});
-
+		if(pop.options.closeButton) {
+			create('button', {class:"xiopop_close", text:'x', type:'button', onClick:pop.close.bind(pop), appendTo: pop.box});
+		}
 
 		if(options.title) {
-			var txtTitle = create("div", {class:"xiopop_title", text:options.title, appendTo:pop.box});
+			create("div", {class:"xiopop_title", text:options.title, appendTo:pop.box});
 		}
 
 		if(options.text) {
-			var txtText = create("p", {html:options.text, appendTo:pop.box});
+			create("p", {html:options.text, appendTo:pop.box});
 		}
 
-		function onCloseClick(e) {
-			pop.close();
+		if(pop.options.fogClickToClose) {
+			pop.xiopop.addEventListener("click", function(e){
+				if(e.target===pop.xiopop) {
+					pop.close();
+				}
+			}, false);
 		}
+
 	};
 
 	_.prototype = {
@@ -71,10 +79,10 @@
 			pop.xiopop.classList.remove("visible");
 			pop.box.classList.remove("visible");
 			setTimeout(function() {
-				pop.xiopop.parentElement.removeChild(pop.xiopop);
+				remove(pop.xiopop);
 				pop.xiopop=null;
 				document.body.style.overflow = "";
-			}, 3000);
+			}, 250);
 
 			if(pop.options.onClose) pop.options.onClose();
 			pop.lastFocus.focus();
@@ -86,9 +94,8 @@
 			this.center();
 		},
 
-
 		keyHandler: function(e) {
-			if(e.keyCode===KEY_ESC && closeOnClickOutside) {
+			if(e.keyCode===KEY_ESC) {
 				this.close();
 			}
 
@@ -98,16 +105,10 @@
 				this.tabIndex = (this.tabIndex+(e.shiftKey?-1:1)) % this.tabStops.length;
 				if(this.tabIndex<0) this.tabIndex = this.tabStops.length-1;
 
-
 				this.tabStops[this.tabIndex].focus();
 			}
 		}
-
-
 	};
-
-
-
 
 
 	_.alert = function(options) {
@@ -171,7 +172,10 @@
 	};
 
 	_.select = function(options) {
+		if(options.closeButton!==false) options.closeButton=true;
+
 		var pop = initPop("select", options);
+
 
 		var filter = create("input", {type:'search', onKeyDown: selectKeyDown, onKeyUp: selectKeyUp, onSearch:selectKeyUp, appendTo:pop.box});
 		var list = create("ul", {class:'xiopop_selectableList', onClick: listClick, appendTo:pop.box});
@@ -277,15 +281,15 @@
 	};
 
 	_.load = function(options) {
+		if(options.closeButton!==false) options.closeButton=true;
+
 		var pop = initPop("page", options);
 
 		var xhr = new XMLHttpRequest();
 		xhr.open("get", options.url, true);
 
 		xhr.onload = function(e) {
-			var content = document.createElement("div");
-			content.innerHTML = e.target.responseText;
-			pop.box.appendChild(content);
+			var content = create("div", {html:e.target.responseText, appendTo:pop.box});
 			pop.center();
 			if(options.onLoad) options.onLoad(e, content);
 		}
@@ -296,6 +300,8 @@
 	};
 
 	_.showElement = function(options) {
+		if(options.closeButton!==false) options.closeButton=true;
+
 		var pop = initPop("element", options);
 		pop.box.appendChild(options.element);
 		pop.show();
@@ -304,12 +310,20 @@
 
 
 
-
-
 	var initPop = function(type, options) {
 		options = options || {};
-		return pop = new XioPop(type, options);
+		return new XioPop(type, options);
 	};
+
+
+
+	function getById(id) {
+		return document.getElementById(id);
+	}
+
+	function remove(element) {
+		element.parentElement.removeChild(element);
+	}
 
 	function create(type, o) {
 		var element = document.createElement(type);
