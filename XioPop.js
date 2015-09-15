@@ -64,8 +64,6 @@
 
 			document.body.style.overflow = "hidden";
 
-			pop.tabStops = pop.box.querySelectorAll('button, input, textarea, select, a, *[tabindex]');
-			pop.tabIndex = 0;
 		},
 
 		center: function() {
@@ -100,6 +98,10 @@
 			}
 
 			if(e.keyCode===KEY_TAB) {
+				this.tabStops = this.box.querySelectorAll('button, input, textarea, select, a, *[tabindex]');
+				var activeIndex = Array.prototype.indexOf.call(this.tabStops, document.activeElement);
+				this.tabIndex = activeIndex >= 0 ? activeIndex : 0;
+
 				e.preventDefault();
 				if(this.tabStops.length===0) return;
 				this.tabIndex = (this.tabIndex+(e.shiftKey?-1:1)) % this.tabStops.length;
