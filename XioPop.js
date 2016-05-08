@@ -196,8 +196,21 @@
 			if(li.nodeName!=="LI") return;
 
 			selectItem(li);
-			options.onSubmit(options.options[li.dataset.index]);
+			itemChosen(li);
+		}
+
+
+		function itemChosen(li) {
+			var index = li.dataset.index;
+
+			if(index<0) {
+				var selectedOption = {id:-1, text: li.textContent, index:index, li:li};
+			} else {
+				var selectedOption = options.options[index];
+			}
+			options.onSubmit(selectedOption);
 			pop.close();
+
 		}
 
 		function selectItem(li) {
@@ -238,8 +251,7 @@
 			if(e.keyCode===KEY_ENTER) {
 				var selected = list.querySelector(".selected");
 				if(!selected) return;
-                options.onSubmit(options.options[selected.dataset.index]);
-                pop.close();
+				itemChosen(selected.dataset.index);
 				e.preventDefault();
 				return;
 			}
@@ -269,6 +281,10 @@
 					if(i===0) li.classList.add("selected");
 					item.li = li;
 					item.index = i;
+				}
+
+				if(searchString && options.allowCreate) {
+					var li = create("li", {html: "Create new: " + searchString, data:{id:0, index:-1}, appendTo: list});
 				}
 
 				var selected = list.querySelector(".selected");

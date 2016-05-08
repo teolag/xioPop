@@ -5,6 +5,7 @@ var btnPage = document.getElementById("btnPage");
 var btnForm = document.getElementById("btnForm");
 var btnWebPage = document.getElementById("btnWebPage");
 var btnSelect = document.getElementById("btnSelect");
+var btnSelectOrCreate = document.getElementById("btnSelectOrCreate");
 var btnChoose = document.getElementById("btnChoose");
 
 
@@ -84,6 +85,26 @@ btnSelect.addEventListener("click", function(e) {
 	XioPop.select({
 		title: "Välj",
 		text: "Vad väljer du?",
+		options: options,
+		onSubmit: function(chosen) {
+			console.log("Chosen list item:", chosen);
+		}
+	});
+}, false);
+
+
+btnSelectOrCreate.addEventListener("click", function(e) {
+	var options = [
+		{id:1, text:"Grävskopa"},
+		{id:2, text:"Flygplan"},
+		{id:3, text:"Hoppinne"},
+		{id:4, text:"Rymdraket"}
+	];
+
+	XioPop.select({
+		title: "Välj fordon",
+		text: "Vilket är ditt favoritfordon?",
+		allowCreate: true,
 		options: options,
 		onSubmit: function(chosen) {
 			console.log("Chosen list item:", chosen);
